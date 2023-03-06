@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2023/3/4 11:12
  */
 @RestController
-public class SpringSecurityController {
+public class HelloController {
     @RequestMapping("/hello")
     public String hello() {
-        System.out.println("111");
-        return "111";
+        System.out.println("hello");
+        return "hello";
     }
 }
