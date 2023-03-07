@@ -6,6 +6,12 @@
 </head>
 <body>
 <h1>用户登录</h1>
+<h2>
+    <!-- 默认就能取到 request 中的属性 -->
+    <div th:text="${SPRING_SECURITY_LAST_EXCEPTION}"></div>
+    <!-- session的话  -->
+    <!--    <div th:text="${session.SPRING_SECURITY_LAST_EXCEPTION}"></div>-->
+</h2>
 <form method="post" th:action="@{/doLogin}">
     用户名:<input name="uname" type="text"/><br>
     密码:<input name="passwd" type="password"/><br>
