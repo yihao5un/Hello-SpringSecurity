@@ -1,6 +1,9 @@
 package com.matrix.hellospringsecurity.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -16,6 +19,12 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
  */
 @Configuration
 public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
+    private final MyUserDetailService myUserDetailService;
+
+    public WebSecurityConfigurer(MyUserDetailService myUserDetailService) {
+        this.myUserDetailService = myUserDetailService;
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
@@ -60,4 +69,44 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .logoutSuccessHandler(new MyLogoutSuccessHandler())
                 .and().csrf().disable(); // 暂时把跨站请求攻击关闭
     }
+
+    // ========================== 数据源 ================================== //
+    // 1. 默认 AuthenticationManager
+    // springboot对security默认配置 在工厂中默认创建AuthenticationManager
+    // @Autowired
+    // public void initialize(AuthenticationManagerBuilder builder) {
+    //    System.out.println("springboot 默认配置 AuthenticationManager:" + builder);
+    // }
+
+    // 2. 自定义 AuthenticationManager (更加推荐)
+    // 工厂内部本地的AuthenticationManager对象(默认没有暴露到工厂外面,不允许在其他自定义组件中注入Autowired)
+    @Override
+    public void configure(AuthenticationManagerBuilder builder) throws Exception {
+        System.out.println("springboot 自定义 AuthenticationManager:" + builder);
+        // 手动赋值
+        // builder.userDetailsService(userDetailsService()); // 默认 daoAuthenticationProvider
+        // 数据库的数据源
+        builder.userDetailsService(myUserDetailService);
+    }
+
+    // 通过重写这个方法可以暴露到工厂外面 并任何位置注入
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    // 内存实现
+    // 1. 默认的AuthenticationManager -> 不用重写initialize方法了 默认就把这个UserDetailsService赋值给AuthenticationManagerBuilder了
+    // 2. 自定义的AuthenticationManager ->  需要手动去重写configure方法 并需要手动将UserDetailsService赋值
+//    @Bean
+//    public UserDetailsService userDetailsService(){
+//        // 内存实现 会将配置文件中的配置给覆盖掉只能通过aaa 和 123 进行登录
+//        InMemoryUserDetailsManager inMemoryUserDetailsManager
+//                = new InMemoryUserDetailsManager();
+//        UserDetails u1 = User.withUsername("aaa")
+//                .password("{noop}123").roles("ADMIN").build();
+//        inMemoryUserDetailsManager.createUser(u1);
+//        return inMemoryUserDetailsManager;
+//    }
 }
